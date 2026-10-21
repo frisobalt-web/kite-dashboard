@@ -5,6 +5,7 @@ import { idealSize, estimatedRange } from './lib/kite';
 import { levelAt, tideState, type TideStation } from './lib/tides';
 import { hm, hourLabel, dayLabel, dayKey, longDay } from './lib/time';
 import { bestSetup, kiteOptions, quiverGaps } from './lib/gear';
+import { offshoreRange, compass } from './lib/direction';
 import type { GearItem } from './lib/settings';
 
 /* ---------- gedeelde stukken ---------- */
@@ -26,10 +27,12 @@ function tideBars(st: TideStation | undefined, hours: HourView[]): string {
   const vals = lv.filter((x): x is number => x !== null);
   if (!vals.length) return '';
   const min = Math.min(...vals), max = Math.max(...vals);
-  const marks = hours.map((h) => {
-    const e = st.extremen.find((x) => Math.abs(x.t - h.t) <= 30 * 60_000);
-    return e ? e.type : '';
-  });
+  const marks = hours.map(() => '');
+  for (const e of st.extremen) {
+    let bi = -1, bd = Infinity;
+    hours.forEach((h, i) => { const dd = Math.abs(h.t - e.t); if (dd < bd) { bd = dd; bi = i; } });
+    if (bi >= 0 && bd <= 45 * 60_000) marks[bi] = e.type;
+  }
   return `<div class="tidebars" style="--n:${hours.length}" aria-label="Getij per uur">${lv
     .map((v, i) => {
       const pct = v === null || max === min ? 10 : 15 + ((v - min) / (max - min)) * 85;
@@ -60,7 +63,8 @@ function errorBox(): string {
 function offWarn(h: HourView | undefined): string {
   if (!h) return '';
   if (h.dirStatus === 'aflandig') return '<span class="badge badge-danger">Aflandig: niet kiten</span>';
-  if (h.dirStatus === 'sideshore') return '<span class="badge badge-warn">Sideshore, opletten</span>';
+  if (h.dirStatus === 'sideoff') return '<span class="badge badge-warn">Side-off: opletten, blijf dicht bij de kant</span>';
+  if (h.dirStatus === 'sideshore') return '<span class="badge badge-info">Sideshore</span>';
   return '';
 }
 
@@ -119,7 +123,7 @@ export function pageNu(): string {
 
 /* ---------- Week ---------- */
 
-interface DaySummary { key: string; t: number; max: HourView | null; window: string; best: HourView | null }
+interface DaySummary { key: string; t: number; max: HourView | null; maxGust: number; window: string; best: HourView | null }
 
 function summarizeDays(d: SpotData): DaySummary[] {
   const byDay = new Map<string, HourView[]>();
@@ -131,12 +135,15 @@ function summarizeDays(d: SpotData): DaySummary[] {
   }
   return [...byDay.entries()].slice(0, 7).map(([key, hs]) => {
     const ok = hs.filter((h) => h.score !== null && h.score >= 3);
-    const max = hs.reduce<HourView | null>((m, h) => (h.dirStatus !== 'aflandig' && (!m || h.avg > m.avg) ? h : m), null);
+    const max = hs.reduce<HourView | null>((m, h) => (h.dirStatus !== 'aflandig' && (!m || h.eff > m.eff) ? h : m), null);
     const best = hs.reduce<HourView | null>((m, h) => (h.score !== null && (!m || h.score > (m.score ?? -9)) ? h : m), null);
     const window = ok.length ? `${hourLabel(ok[0].t)}–${hourLabel(ok[ok.length - 1].t + 3600_000)} u` : '';
-    return { key, t: hs[0].t, max, window, best };
+    const maxGust = Math.max(0, ...hs.filter((h) => h.dirStatus !== 'aflandig').map((h) => h.gust));
+    return { key, t: hs[0].t, max, maxGust, window, best };
   });
 }
+
+const noGood = (x: DaySummary) => (x.maxGust < 15 ? 'te weinig wind' : 'geen goed moment');
 
 export function pageWeek(): string {
   if (!state.data.length) return state.loading ? '<div class="card">Verwachting laden…</div>' : errorBox();
@@ -151,7 +158,7 @@ export function pageWeek(): string {
           ({ d, days: ds }) => `<a class="weekname" href="#/spot/${d.spot.id}">${esc(d.spot.kort)}</a>${ds
             .map((x) =>
               x.max
-                ? `<div class="weekcell" style="${cellStyle(x.max.avg)}"><b>${r(x.max.avg)}</b><small>${x.window || 'te zwak'}</small></div>`
+                ? `<div class="weekcell" style="${cellStyle(x.max.avg)}"><b>${r(x.max.avg)}<span class="gust">/${r(x.max.gust)}</span></b><small>${x.window || noGood(x)}</small></div>`
                 : '<div class="weekcell off"><b>afl.</b><small>niet kiten</small></div>'
             )
             .join('')}`
@@ -176,7 +183,7 @@ export function pageWeek(): string {
         <div class="dayspots">${sums
           .map((s) => {
             const x = s.days[i];
-            return `<div><span>${esc(s.d.spot.kort)}</span>${x?.max ? `<span class="pill" style="${cellStyle(x.max.avg)}">${r(x.max.avg)}</span><span class="muted">${x.window || 'te zwak'}</span>` : '<span class="badge badge-danger">aflandig</span>'}</div>`;
+            return `<div><span>${esc(s.d.spot.kort)}</span>${x?.max ? `<span class="pill" style="${cellStyle(x.max.avg)}">${r(x.max.avg)}/${r(x.max.gust)}</span><span class="muted">${x.window || noGood(x)}</span>` : '<span class="badge badge-danger">aflandig</span>'}</div>`;
           })
           .join('')}</div>
       </details>`;
@@ -184,7 +191,7 @@ export function pageWeek(): string {
     .join('');
 
   return `${errorBox()}<section class="card">
-      <div class="card-head"><h2>Komende 7 dagen</h2><span class="muted">Hoogste gemiddelde wind overdag · tijdvak met goed kite-advies</span></div>
+      <div class="card-head"><h2>Komende 7 dagen</h2><span class="muted">Sterkste uur overdag (gemiddeld/vlagen) · tijdvak met goed kite-advies</span></div>
       <div class="desk-only">${grid}</div>
       <div class="mob-only">${cards}</div>
     </section>${sourceNote()}`;
@@ -264,7 +271,7 @@ export function pageSpot(id: string): string {
           <div><span class="muted">Watertemperatuur</span><b>${d.marine?.sst != null ? `${r(d.marine.sst)} °C` : '–'}</b></div>
           <div><span class="muted">Golfhoogte</span><b>${d.marine?.wave != null ? `${d.marine.wave.toFixed(1).replace('.', ',')} m` : '–'}</b></div>
           <div><span class="muted">Luchttemperatuur</span><b>${h ? `${r(h.temp)} °C` : '–'}</b></div>
-          <div><span class="muted">Goede windrichting</span><b>${d.spot.goedeSector[0]}°–${d.spot.goedeSector[1]}°</b></div>
+          <div><span class="muted">Aflandig bij wind uit</span><b>${(() => { const [a, b] = offshoreRange(d.spot.kustrichting, d.spot.aflandigVanaf); return `${compass(a)}–${compass(b)} (${a}°–${b}°)`; })()}</b></div>
         </div>
         <p class="muted">${esc(d.spot.notitie)}</p>
         <p><a href="https://www.openstreetmap.org/?mlat=${d.spot.lat}&mlon=${d.spot.lon}#map=14/${d.spot.lat}/${d.spot.lon}" target="_blank" rel="noopener">Bekijk op de kaart</a></p>

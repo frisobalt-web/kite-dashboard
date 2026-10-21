@@ -8,7 +8,7 @@ Wind, vlagen, regen, getij en je ideale kitemaat voor Kijkduin/Zandmotor, Hoek v
 Open de link in Safari → Deel → **Zet op beginscherm**.
 
 ## Aanpassen
-- **Spots, windrichtingen, getijstation:** `src/config/spots.json`
+- **Spots, kustrichting, grens voor aflandig (`aflandigVanaf`), getijstation:** `src/config/spots.json`
 - **Gewicht, power, quiver/gear, volgorde spots:** in de app (Instellingen en Gear), bewaard op je apparaat; overzetten met Exporteren/Importeren.
 - **Bar-advies van fabrikanten:** `src/data/gear-db.json`
 

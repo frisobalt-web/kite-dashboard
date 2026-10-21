@@ -8,3 +8,5 @@
 6. **Offline**: service worker met netwerk-eerst; zonder bereik toont de app de laatst geladen verwachting.
 7. **Sideshore-grens**: een richting buiten de sector maar binnen 30° ervan is sideshore, tenzij hij meer dan 100° van de kustrichting afwijkt; dan is hij aflandig (bijv. 185° in Kijkduin).
 8. **Instellingen in localStorage** per apparaat; export/import als JSON om tussen telefoon en laptop over te zetten.
+9. **Vlagen bij lichte wind** (21 okt): de check op te weinig wind telt 2/3 van de vlagen mee, vergeleken met je grootste kite. Zo wordt 11 kn met vlagen 18 "Krap, vlagerig · pak je 11m" in plaats van "te weinig".
+10. **Aflandig minder streng** (21 okt): in plaats van een vaste sector telt de hoek met de kustrichting: side-off (110–135°) geeft een waarschuwing maar wel advies; pas boven 135° is het aflandig. ZZO (164°) in Kijkduin is daardoor side-off in plaats van geblokkeerd. 7 vervalt hiermee.

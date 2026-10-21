@@ -15,11 +15,23 @@ export function inSector(deg: number, sector: [number, number]): boolean {
   return start <= end ? d >= start && d <= end : d >= start || d <= end;
 }
 
-export type DirStatus = 'goed' | 'sideshore' | 'aflandig';
+export type DirStatus = 'goed' | 'sideshore' | 'sideoff' | 'aflandig';
 
-export function directionStatus(deg: number, sector: [number, number], kustrichting: number): DirStatus {
-  if (angleDiff(deg, kustrichting) > 100) return 'aflandig';
-  if (inSector(deg, sector)) return 'goed';
-  const near = angleDiff(deg, sector[0]) <= 30 || angleDiff(deg, sector[1]) <= 30;
-  return near ? 'sideshore' : 'aflandig';
+/**
+ * Indeling op basis van de hoek tussen de wind en de richting waarin de kust naar zee kijkt:
+ * 0–80° aanlandig, 80–110° sideshore, 110°–aflandigVanaf side-off (opletten), daarboven aflandig.
+ */
+export function directionStatus(deg: number, kustrichting: number, aflandigVanaf = 135): DirStatus {
+  const d = angleDiff(deg, kustrichting);
+  if (d > aflandigVanaf) return 'aflandig';
+  if (d > 110) return 'sideoff';
+  if (d > 80) return 'sideshore';
+  return 'goed';
+}
+
+/** Windrichtingen (van–tot, met de klok mee) waarbij het aflandig is. */
+export function offshoreRange(kustrichting: number, aflandigVanaf = 135): [number, number] {
+  const back = (kustrichting + 180) % 360;
+  const half = 180 - aflandigVanaf;
+  return [((back - half) % 360 + 360) % 360, (back + half) % 360];
 }
