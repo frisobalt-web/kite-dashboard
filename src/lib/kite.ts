@@ -1,4 +1,6 @@
 export const GUST_SHARE = 1 / 3;
+/** Aandeel van de vlagen bij de check of er écht te weinig wind is. */
+export const GUSTY_SHARE = 2 / 3;
 
 export function effectiveWind(avg: number, gust: number, share = GUST_SHARE): number {
   return avg + Math.max(0, gust - avg) * share;
@@ -9,7 +11,7 @@ export function idealSize(weightKg: number, effWindKn: number, power: number): n
   return (weightKg / effWindKn) * (2.2 + 0.1 * power);
 }
 
-export type LabelKind = 'groen' | 'oranje' | 'weinig' | 'veel' | 'aflandig';
+export type LabelKind = 'groen' | 'krap' | 'oranje' | 'weinig' | 'veel' | 'aflandig';
 
 export interface KiteLabel {
   kind: LabelKind;
@@ -27,8 +29,15 @@ export function nearestInQuiver(ideal: number, quiver: number[]): number | null 
   return best;
 }
 
-export function kiteLabel(ideal: number, quiver: number[], offshore = false): KiteLabel {
+export function kiteLabel(ideal: number, quiver: number[], offshore = false, idealGusty = ideal): KiteLabel {
   if (offshore) return { kind: 'aflandig', main: 'Aflandig', sub: '', ideal: null, pick: null };
+  if (quiver.length) {
+    // Te weinig voor je grootste kite op het gemiddelde, maar met de vlagen wel: kitebaar, wel krap.
+    const biggest = Math.max(...quiver);
+    if (ideal > biggest + 1.2 && idealGusty <= biggest + 1.2) {
+      return { kind: 'krap', main: 'Krap, vlagerig', sub: `pak je ${biggest}m`, ideal: Math.round(ideal), pick: biggest };
+    }
+  }
   if (ideal > 17) return { kind: 'weinig', main: 'Te weinig wind', sub: '', ideal: null, pick: null };
   if (ideal < 5) return { kind: 'veel', main: 'Te veel wind', sub: '', ideal: null, pick: null };
   const rounded = Math.round(ideal);

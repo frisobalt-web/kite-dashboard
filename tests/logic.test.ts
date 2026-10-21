@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { idealSize, kiteLabel, effectiveWind, estimatedRange } from '../src/lib/kite';
+import { idealSize, kiteLabel, effectiveWind, estimatedRange, GUSTY_SHARE } from '../src/lib/kite';
 import { windRgb } from '../src/lib/colors';
 import { inSector, directionStatus, compass } from '../src/lib/direction';
 import { findExtremes } from '../src/lib/tides';
@@ -29,6 +29,26 @@ describe('kitemaat', () => {
     expect(kiteLabel(18, [9]).kind).toBe('weinig');
     expect(kiteLabel(4.5, [9]).kind).toBe('veel');
     expect(kiteLabel(9, [9], true).kind).toBe('aflandig');
+  });
+});
+
+describe('vlagen bij lichte wind', () => {
+  const label = (avg: number, gust: number) =>
+    kiteLabel(idealSize(75, effectiveWind(avg, gust), 1), [9, 11], false, idealSize(75, effectiveWind(avg, gust, GUSTY_SHARE), 1));
+  it('13 kn met vlagen 20 is niet te weinig wind', () => {
+    const l = label(13, 20);
+    expect(l.kind).not.toBe('weinig');
+  });
+  it('9 kn met vlagen 12 is wel te weinig wind', () => {
+    expect(label(9, 12).kind).toBe('weinig');
+  });
+  it('geeft krap-vlagerig met de grootste kite als alleen de vlagen het redden', () => {
+    expect(label(10, 19)).toMatchObject({ kind: 'krap', main: 'Krap, vlagerig', sub: 'pak je 11m' });
+    expect(label(11, 18).kind).toBe('krap');
+  });
+  it('krap telt mee als kitebaar moment', () => {
+    const l = label(11, 18);
+    expect(spotScore({ avg: 11, gust: 18, eff: effectiveWind(11, 18), rain: 0, label: l, daylight: true })).toBeGreaterThanOrEqual(3);
   });
 });
 
@@ -85,12 +105,12 @@ describe('getij-rimpels', () => {
 describe('beste spot', () => {
   const base = { kind: 'groen' as const, main: '', sub: '', ideal: 9, pick: 9 };
   it('telt niet bij donker of aflandig', () => {
-    expect(spotScore({ avg: 20, gust: 24, rain: 0, label: base, daylight: false })).toBeNull();
-    expect(spotScore({ avg: 20, gust: 24, rain: 0, label: { ...base, kind: 'aflandig' }, daylight: true })).toBeNull();
+    expect(spotScore({ avg: 20, gust: 24, eff: 21, rain: 0, label: base, daylight: false })).toBeNull();
+    expect(spotScore({ avg: 20, gust: 24, eff: 21, rain: 0, label: { ...base, kind: 'aflandig' }, daylight: true })).toBeNull();
   });
   it('minpunten voor regen en vlagerigheid', () => {
-    expect(spotScore({ avg: 20, gust: 24, rain: 0, label: base, daylight: true })).toBe(5);
-    expect(spotScore({ avg: 20, gust: 32, rain: 1.5, label: base, daylight: true })).toBe(3);
+    expect(spotScore({ avg: 20, gust: 24, eff: 21, rain: 0, label: base, daylight: true })).toBe(5);
+    expect(spotScore({ avg: 20, gust: 34, eff: 24, rain: 1.5, label: base, daylight: true })).toBe(3);
   });
 });
 

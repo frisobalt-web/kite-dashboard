@@ -2,7 +2,7 @@ import spotsJson from './config/spots.json';
 import { fetchForecast, fetchMarine, type Hour, type Marine, type SpotForecast } from './api/openmeteo';
 import { loadRwsTides, findExtremes, type TideStation } from './lib/tides';
 import { loadSettings, quiver, saveSettings, type Settings } from './lib/settings';
-import { effectiveWind, idealSize, kiteLabel, type KiteLabel } from './lib/kite';
+import { effectiveWind, idealSize, kiteLabel, GUSTY_SHARE, type KiteLabel } from './lib/kite';
 import { directionStatus, type DirStatus } from './lib/direction';
 import { spotScore } from './lib/score';
 import { dayKey } from './lib/time';
@@ -57,9 +57,10 @@ export function viewHour(h: Hour, spot: Spot, f: SpotForecast): HourView {
   const s = state.settings;
   const eff = effectiveWind(h.avg, h.gust, s.gust);
   const dirStatus = directionStatus(h.dir, spot.goedeSector, spot.kustrichting);
-  const label = kiteLabel(idealSize(s.gewicht, eff, s.power), quiver(s), dirStatus === 'aflandig');
+  const gusty = idealSize(s.gewicht, effectiveWind(h.avg, h.gust, Math.max(s.gust, GUSTY_SHARE)), s.power);
+  const label = kiteLabel(idealSize(s.gewicht, eff, s.power), quiver(s), dirStatus === 'aflandig', gusty);
   const daylight = isDaylight(h.t, f);
-  return { ...h, eff, label, dirStatus, daylight, score: spotScore({ avg: h.avg, gust: h.gust, rain: h.rain, label, daylight }) };
+  return { ...h, eff, label, dirStatus, daylight, score: spotScore({ avg: h.avg, gust: h.gust, eff, rain: h.rain, label, daylight }) };
 }
 
 function recompute(): void {

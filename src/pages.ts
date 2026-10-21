@@ -121,7 +121,7 @@ export function pageNu(): string {
 
 /* ---------- Week ---------- */
 
-interface DaySummary { key: string; t: number; max: HourView | null; window: string; best: HourView | null }
+interface DaySummary { key: string; t: number; max: HourView | null; maxGust: number; window: string; best: HourView | null }
 
 function summarizeDays(d: SpotData): DaySummary[] {
   const byDay = new Map<string, HourView[]>();
@@ -133,12 +133,15 @@ function summarizeDays(d: SpotData): DaySummary[] {
   }
   return [...byDay.entries()].slice(0, 7).map(([key, hs]) => {
     const ok = hs.filter((h) => h.score !== null && h.score >= 3);
-    const max = hs.reduce<HourView | null>((m, h) => (h.dirStatus !== 'aflandig' && (!m || h.avg > m.avg) ? h : m), null);
+    const max = hs.reduce<HourView | null>((m, h) => (h.dirStatus !== 'aflandig' && (!m || h.eff > m.eff) ? h : m), null);
     const best = hs.reduce<HourView | null>((m, h) => (h.score !== null && (!m || h.score > (m.score ?? -9)) ? h : m), null);
     const window = ok.length ? `${hourLabel(ok[0].t)}–${hourLabel(ok[ok.length - 1].t + 3600_000)} u` : '';
-    return { key, t: hs[0].t, max, window, best };
+    const maxGust = Math.max(0, ...hs.filter((h) => h.dirStatus !== 'aflandig').map((h) => h.gust));
+    return { key, t: hs[0].t, max, maxGust, window, best };
   });
 }
+
+const noGood = (x: DaySummary) => (x.maxGust < 15 ? 'te weinig wind' : 'geen goed moment');
 
 export function pageWeek(): string {
   if (!state.data.length) return state.loading ? '<div class="card">Verwachting laden…</div>' : errorBox();
@@ -153,7 +156,7 @@ export function pageWeek(): string {
           ({ d, days: ds }) => `<a class="weekname" href="#/spot/${d.spot.id}">${esc(d.spot.kort)}</a>${ds
             .map((x) =>
               x.max
-                ? `<div class="weekcell" style="${cellStyle(x.max.avg)}"><b>${r(x.max.avg)}</b><small>${x.window || 'geen goed moment'}</small></div>`
+                ? `<div class="weekcell" style="${cellStyle(x.max.avg)}"><b>${r(x.max.avg)}<span class="gust">/${r(x.max.gust)}</span></b><small>${x.window || noGood(x)}</small></div>`
                 : '<div class="weekcell off"><b>afl.</b><small>niet kiten</small></div>'
             )
             .join('')}`
@@ -178,7 +181,7 @@ export function pageWeek(): string {
         <div class="dayspots">${sums
           .map((s) => {
             const x = s.days[i];
-            return `<div><span>${esc(s.d.spot.kort)}</span>${x?.max ? `<span class="pill" style="${cellStyle(x.max.avg)}">${r(x.max.avg)}</span><span class="muted">${x.window || 'geen goed moment'}</span>` : '<span class="badge badge-danger">aflandig</span>'}</div>`;
+            return `<div><span>${esc(s.d.spot.kort)}</span>${x?.max ? `<span class="pill" style="${cellStyle(x.max.avg)}">${r(x.max.avg)}/${r(x.max.gust)}</span><span class="muted">${x.window || noGood(x)}</span>` : '<span class="badge badge-danger">aflandig</span>'}</div>`;
           })
           .join('')}</div>
       </details>`;
@@ -186,7 +189,7 @@ export function pageWeek(): string {
     .join('');
 
   return `${errorBox()}<section class="card">
-      <div class="card-head"><h2>Komende 7 dagen</h2><span class="muted">Hoogste gemiddelde wind overdag · tijdvak met goed kite-advies</span></div>
+      <div class="card-head"><h2>Komende 7 dagen</h2><span class="muted">Sterkste uur overdag (gemiddeld/vlagen) · tijdvak met goed kite-advies</span></div>
       <div class="desk-only">${grid}</div>
       <div class="mob-only">${cards}</div>
     </section>${sourceNote()}`;
