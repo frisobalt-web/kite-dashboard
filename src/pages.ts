@@ -5,6 +5,7 @@ import { idealSize, estimatedRange } from './lib/kite';
 import { levelAt, tideState, type TideStation } from './lib/tides';
 import { hm, hourLabel, dayLabel, dayKey, longDay } from './lib/time';
 import { bestSetup, kiteOptions, quiverGaps } from './lib/gear';
+import { offshoreRange, compass } from './lib/direction';
 import type { GearItem } from './lib/settings';
 
 /* ---------- gedeelde stukken ---------- */
@@ -62,7 +63,8 @@ function errorBox(): string {
 function offWarn(h: HourView | undefined): string {
   if (!h) return '';
   if (h.dirStatus === 'aflandig') return '<span class="badge badge-danger">Aflandig: niet kiten</span>';
-  if (h.dirStatus === 'sideshore') return '<span class="badge badge-warn">Sideshore, opletten</span>';
+  if (h.dirStatus === 'sideoff') return '<span class="badge badge-warn">Side-off: opletten, blijf dicht bij de kant</span>';
+  if (h.dirStatus === 'sideshore') return '<span class="badge badge-info">Sideshore</span>';
   return '';
 }
 
@@ -269,7 +271,7 @@ export function pageSpot(id: string): string {
           <div><span class="muted">Watertemperatuur</span><b>${d.marine?.sst != null ? `${r(d.marine.sst)} °C` : '–'}</b></div>
           <div><span class="muted">Golfhoogte</span><b>${d.marine?.wave != null ? `${d.marine.wave.toFixed(1).replace('.', ',')} m` : '–'}</b></div>
           <div><span class="muted">Luchttemperatuur</span><b>${h ? `${r(h.temp)} °C` : '–'}</b></div>
-          <div><span class="muted">Goede windrichting</span><b>${d.spot.goedeSector[0]}°–${d.spot.goedeSector[1]}°</b></div>
+          <div><span class="muted">Aflandig bij wind uit</span><b>${(() => { const [a, b] = offshoreRange(d.spot.kustrichting, d.spot.aflandigVanaf); return `${compass(a)}–${compass(b)} (${a}°–${b}°)`; })()}</b></div>
         </div>
         <p class="muted">${esc(d.spot.notitie)}</p>
         <p><a href="https://www.openstreetmap.org/?mlat=${d.spot.lat}&mlon=${d.spot.lon}#map=14/${d.spot.lat}/${d.spot.lon}" target="_blank" rel="noopener">Bekijk op de kaart</a></p>

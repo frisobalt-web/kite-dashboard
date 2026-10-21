@@ -19,7 +19,7 @@ Breakpoint 768 px: daaronder tabbalk onderin en compacte weergave (10 uren per s
 Labels: groen "Ideaal Xm / pak je Ym" als een quiver-kite binnen 1,2 m ligt (gelijke afstand → kleinere); "Krap, vlagerig / pak je <grootste>m" als de gemiddelde wind te weinig is voor je grootste kite maar de wind met 2/3 van de vlagen wél (telt als kitebaar); anders oranje "Ideaal Xm"; >17 m "Te weinig wind"; <5 m "Te veel wind"; aflandig → "Aflandig".
 
 ## Windrichting
-Per spot een goede sector (met de klok mee). Buiten de sector maar binnen 30° → sideshore; meer dan 100° van de kustrichting → aflandig (geen advies, telt niet mee).
+Hoek tussen wind en de richting waarin de kust naar zee kijkt (`kustrichting`): 0–80° aanlandig, 80–110° sideshore, 110°–`aflandigVanaf` (standaard 135°) side-off: advies met waarschuwing en −1 in de score; daarboven aflandig: geen advies, telt niet mee. `aflandigVanaf` is per spot in te stellen in `spots.json`.
 
 ## Kleurschaal (kn → RGB, lineair ertussen)
 0 (181,212,244) · 8 (133,183,235) · 12 (93,202,165) · 16 (151,196,89) · 20 (239,208,39) · 24 (239,159,39) · 28 (226,75,74) · 34 (163,45,45) · 40 (127,119,221). Tekst wit vanaf 27 kn.

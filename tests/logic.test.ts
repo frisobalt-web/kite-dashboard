@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { idealSize, kiteLabel, effectiveWind, estimatedRange, GUSTY_SHARE } from '../src/lib/kite';
 import { windRgb } from '../src/lib/colors';
-import { inSector, directionStatus, compass } from '../src/lib/direction';
+import { inSector, directionStatus, compass, offshoreRange } from '../src/lib/direction';
 import { findExtremes } from '../src/lib/tides';
 import { spotScore } from '../src/lib/score';
 import { bestSetup, quiverGaps, kiteOptions, recommendedBar } from '../src/lib/gear';
@@ -64,10 +64,14 @@ describe('windrichting', () => {
     expect(inSector(100, [200, 20])).toBe(false);
   });
   it('aflandig en sideshore', () => {
-    expect(directionStatus(120, [200, 20], 295)).toBe('aflandig');
-    expect(directionStatus(225, [200, 20], 295)).toBe('goed');
-    expect(directionStatus(195, [200, 20], 295)).toBe('sideshore');
-    expect(directionStatus(185, [200, 20], 295)).toBe('aflandig');
+    expect(directionStatus(225, 295)).toBe('goed');
+    expect(directionStatus(200, 295)).toBe('sideshore');
+    expect(directionStatus(164, 295)).toBe('sideoff'); // ZZO in Kijkduin: opletten, niet blokkeren
+    expect(directionStatus(120, 295)).toBe('aflandig');
+    expect(directionStatus(150, 295, 150)).toBe('sideoff');
+  });
+  it('aflandig bereik voor Kijkduin', () => {
+    expect(offshoreRange(295)).toEqual([70, 160]);
   });
   it('kompasnaam', () => {
     expect(compass(225)).toBe('ZW');

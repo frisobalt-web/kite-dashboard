@@ -6,9 +6,9 @@
     "lat": 52.045,
     "lon": 4.185,
     "kustrichting": 295,
-    "goedeSector": [200, 20],
     "getijStation": "scheveningen",
-    "notitie": "Lagune rond laagwater ondiep en vlak."
+    "notitie": "Lagune rond laagwater ondiep en vlak.",
+    "aflandigVanaf": 135
   },
   {
     "id": "hoek",
@@ -17,9 +17,9 @@
     "lat": 51.98,
     "lon": 4.12,
     "kustrichting": 305,
-    "goedeSector": [210, 20],
     "getijStation": "hoekvanholland",
-    "notitie": "Soms dubbel laagwater."
+    "notitie": "Soms dubbel laagwater.",
+    "aflandigVanaf": 135
   },
   {
     "id": "maasvlakte",
@@ -28,9 +28,9 @@
     "lat": 51.925,
     "lon": 3.99,
     "kustrichting": 280,
-    "goedeSector": [190, 330],
     "getijStation": "hoekvanholland",
-    "notitie": "Baai voor de Slufter: bij laagwater ver lopen, bij opkomend water lagunes."
+    "notitie": "Baai voor de Slufter: bij laagwater ver lopen, bij opkomend water lagunes.",
+    "aflandigVanaf": 135
   },
   {
     "id": "scheveningen",
@@ -39,8 +39,8 @@
     "lat": 52.105,
     "lon": 4.275,
     "kustrichting": 300,
-    "goedeSector": [200, 20],
     "getijStation": "scheveningen",
-    "notitie": "Let op de aangewezen kitezone."
+    "notitie": "Let op de aangewezen kitezone.",
+    "aflandigVanaf": 135
   }
 ]

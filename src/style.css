@@ -84,6 +84,7 @@ button { cursor: pointer; }
 .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; margin: 0; }
 .badge-danger { background: var(--bad-bg); color: var(--bad-fg); }
 .badge-warn { background: var(--warn-bg); color: var(--warn-fg); }
+.badge-info { background: var(--info-bg); color: var(--info-fg); }
 .pill { display: inline-block; min-width: 34px; text-align: center; font-weight: 700; border-radius: 6px; padding: 2px 6px; }
 
 /* uurtabel */

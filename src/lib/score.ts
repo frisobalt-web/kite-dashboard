@@ -7,6 +7,7 @@ export interface ScoreInput {
   rain: number;
   label: KiteLabel;
   daylight: boolean;
+  sideoff?: boolean;
 }
 
 /** Hoger is beter; null = telt niet mee (donker of aflandig). */
@@ -19,5 +20,6 @@ export function spotScore(s: ScoreInput): number | null {
   if ((s.eff >= 16 && s.eff <= 24) || (s.eff >= 14 && s.gust >= 20 && s.eff < 16)) score += 2;
   if (s.rain >= 1) score -= 1;
   if (s.gust - s.avg > 12) score -= 1;
+  if (s.sideoff) score -= 1;
   return score;
 }
