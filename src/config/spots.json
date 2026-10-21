@@ -1,0 +1,46 @@
+[
+  {
+    "id": "kijkduin",
+    "naam": "Kijkduin / Zandmotor",
+    "kort": "Kijkduin",
+    "lat": 52.045,
+    "lon": 4.185,
+    "kustrichting": 295,
+    "goedeSector": [200, 20],
+    "getijStation": "scheveningen",
+    "notitie": "Lagune rond laagwater ondiep en vlak."
+  },
+  {
+    "id": "hoek",
+    "naam": "Hoek van Holland",
+    "kort": "Hoek",
+    "lat": 51.98,
+    "lon": 4.12,
+    "kustrichting": 305,
+    "goedeSector": [210, 20],
+    "getijStation": "hoekvanholland",
+    "notitie": "Soms dubbel laagwater."
+  },
+  {
+    "id": "maasvlakte",
+    "naam": "Maasvlakte / Slufter",
+    "kort": "Maasvlakte",
+    "lat": 51.925,
+    "lon": 3.99,
+    "kustrichting": 280,
+    "goedeSector": [190, 330],
+    "getijStation": "hoekvanholland",
+    "notitie": "Baai voor de Slufter: bij laagwater ver lopen, bij opkomend water lagunes."
+  },
+  {
+    "id": "scheveningen",
+    "naam": "Scheveningen Noorderstrand",
+    "kort": "Scheveningen",
+    "lat": 52.105,
+    "lon": 4.275,
+    "kustrichting": 300,
+    "goedeSector": [200, 20],
+    "getijStation": "scheveningen",
+    "notitie": "Let op de aangewezen kitezone."
+  }
+]
