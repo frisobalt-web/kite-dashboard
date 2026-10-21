@@ -2,21 +2,36 @@ export interface TidePoint { t: number; h: number } // ms, meter
 export interface TideExtreme { t: number; h: number; type: 'HW' | 'LW' }
 export interface TideStation { reeks: TidePoint[]; extremen: TideExtreme[]; bron: 'rws' | 'benadering' }
 
-/** Lokale hoog- en laagwaters; meerdere per dag mogelijk (dubbel laagwater Hoek van Holland). */
-export function findExtremes(points: TidePoint[], minGapMs = 2 * 3600_000): TideExtreme[] {
+/**
+ * Hoog- en laagwaters via een zigzag: een keerpunt telt pas als het water daarna
+ * minstens `minRise` meter de andere kant op gaat. Zo tellen rimpels van een paar cm
+ * niet mee, maar een echt dubbel laagwater (Hoek van Holland) wel.
+ */
+export function findExtremes(points: TidePoint[], minRise = 0.05): TideExtreme[] {
   const out: TideExtreme[] = [];
-  for (let i = 1; i < points.length - 1; i++) {
-    const p = points[i - 1].h, c = points[i].h, n = points[i + 1].h;
-    let type: 'HW' | 'LW' | null = null;
-    if (c > p && c >= n) type = 'HW';
-    else if (c < p && c <= n) type = 'LW';
-    if (!type) continue;
-    const last = out[out.length - 1];
-    if (last && last.type === type && points[i].t - last.t < minGapMs) {
-      if ((type === 'HW' && c > last.h) || (type === 'LW' && c < last.h)) out[out.length - 1] = { t: points[i].t, h: c, type };
-      continue;
+  if (points.length < 3) return out;
+  let dir = 0; // 1 = zoekt HW, -1 = zoekt LW, 0 = nog onbekend
+  let hi = 0, hiEnd = 0, lo = 0, loEnd = 0;
+  const mid = (a: number, b: number) => points[a].t + (points[b].t - points[a].t) / 2;
+  for (let i = 1; i < points.length; i++) {
+    const h = points[i].h;
+    if (dir >= 0) {
+      if (h > points[hi].h) { hi = i; hiEnd = i; }
+      else if (h === points[hi].h) hiEnd = i;
+      else if (points[hi].h - h >= minRise) {
+        if (hi !== 0) out.push({ t: mid(hi, hiEnd), h: points[hi].h, type: 'HW' });
+        dir = -1; lo = i; loEnd = i;
+        continue;
+      }
     }
-    out.push({ t: points[i].t, h: c, type });
+    if (dir <= 0) {
+      if (h < points[lo].h) { lo = i; loEnd = i; }
+      else if (h === points[lo].h) loEnd = i;
+      else if (h - points[lo].h >= minRise) {
+        if (lo !== 0) out.push({ t: mid(lo, loEnd), h: points[lo].h, type: 'LW' });
+        dir = 1; hi = i; hiEnd = i;
+      }
+    }
   }
   return out;
 }

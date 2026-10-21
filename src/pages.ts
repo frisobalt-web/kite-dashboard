@@ -26,10 +26,12 @@ function tideBars(st: TideStation | undefined, hours: HourView[]): string {
   const vals = lv.filter((x): x is number => x !== null);
   if (!vals.length) return '';
   const min = Math.min(...vals), max = Math.max(...vals);
-  const marks = hours.map((h) => {
-    const e = st.extremen.find((x) => Math.abs(x.t - h.t) <= 30 * 60_000);
-    return e ? e.type : '';
-  });
+  const marks = hours.map(() => '');
+  for (const e of st.extremen) {
+    let bi = -1, bd = Infinity;
+    hours.forEach((h, i) => { const dd = Math.abs(h.t - e.t); if (dd < bd) { bd = dd; bi = i; } });
+    if (bi >= 0 && bd <= 45 * 60_000) marks[bi] = e.type;
+  }
   return `<div class="tidebars" style="--n:${hours.length}" aria-label="Getij per uur">${lv
     .map((v, i) => {
       const pct = v === null || max === min ? 10 : 15 + ((v - min) / (max - min)) * 85;

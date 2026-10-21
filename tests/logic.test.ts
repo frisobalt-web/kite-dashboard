@@ -67,8 +67,18 @@ describe('getij', () => {
   it('verwerkt een dubbel laagwater (Hoek van Holland) als twee laagwaters', () => {
     const shape = [100, 60, 10, -40, -60, -50, -45, -55, -62, -30, 20, 80, 110, 90];
     const pts = shape.map((cm, i) => ({ t: t0 + i * 40 * 60_000, h: cm / 100 }));
-    const ex = findExtremes(pts, 60 * 60_000);
+    const ex = findExtremes(pts);
     expect(ex.filter((e) => e.type === 'LW').length).toBe(2);
+  });
+});
+
+describe('getij-rimpels', () => {
+  const t0 = Date.UTC(2026, 9, 21, 0, 0);
+  it('negeert een bult van 1 cm rond laagwater', () => {
+    const shape = [52, 30, 0, -30, -50, -54, -53, -54, -40, 0, 50, 90];
+    const pts = shape.map((cm, i) => ({ t: t0 + i * 3600_000, h: cm / 100 }));
+    const ex = findExtremes(pts);
+    expect(ex.map((e) => e.type)).toEqual(['LW']);
   });
 });
 
