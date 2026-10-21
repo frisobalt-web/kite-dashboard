@@ -153,7 +153,7 @@ export function pageWeek(): string {
           ({ d, days: ds }) => `<a class="weekname" href="#/spot/${d.spot.id}">${esc(d.spot.kort)}</a>${ds
             .map((x) =>
               x.max
-                ? `<div class="weekcell" style="${cellStyle(x.max.avg)}"><b>${r(x.max.avg)}</b><small>${x.window || 'te zwak'}</small></div>`
+                ? `<div class="weekcell" style="${cellStyle(x.max.avg)}"><b>${r(x.max.avg)}</b><small>${x.window || 'geen goed moment'}</small></div>`
                 : '<div class="weekcell off"><b>afl.</b><small>niet kiten</small></div>'
             )
             .join('')}`
@@ -178,7 +178,7 @@ export function pageWeek(): string {
         <div class="dayspots">${sums
           .map((s) => {
             const x = s.days[i];
-            return `<div><span>${esc(s.d.spot.kort)}</span>${x?.max ? `<span class="pill" style="${cellStyle(x.max.avg)}">${r(x.max.avg)}</span><span class="muted">${x.window || 'te zwak'}</span>` : '<span class="badge badge-danger">aflandig</span>'}</div>`;
+            return `<div><span>${esc(s.d.spot.kort)}</span>${x?.max ? `<span class="pill" style="${cellStyle(x.max.avg)}">${r(x.max.avg)}</span><span class="muted">${x.window || 'geen goed moment'}</span>` : '<span class="badge badge-danger">aflandig</span>'}</div>`;
           })
           .join('')}</div>
       </details>`;
